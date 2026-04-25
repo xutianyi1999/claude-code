@@ -1,12 +1,6 @@
 import { FILE_EDIT_TOOL_NAME } from '@claude-code-best/builtin-tools/tools/FileEditTool/constants.js'
-import { FILE_READ_TOOL_NAME } from '@claude-code-best/builtin-tools/tools/FileReadTool/prompt.js'
 import { FILE_WRITE_TOOL_NAME } from '@claude-code-best/builtin-tools/tools/FileWriteTool/prompt.js'
-import { GLOB_TOOL_NAME } from '@claude-code-best/builtin-tools/tools/GlobTool/prompt.js'
-import { GREP_TOOL_NAME } from '@claude-code-best/builtin-tools/tools/GrepTool/prompt.js'
 import { NOTEBOOK_EDIT_TOOL_NAME } from '@claude-code-best/builtin-tools/tools/NotebookEditTool/constants.js'
-import { WEB_FETCH_TOOL_NAME } from '@claude-code-best/builtin-tools/tools/WebFetchTool/prompt.js'
-import { WEB_SEARCH_TOOL_NAME } from '@claude-code-best/builtin-tools/tools/WebSearchTool/prompt.js'
-import { SHELL_TOOL_NAMES } from 'src/utils/shell/shellToolUtils.js'
 import { isEnvTruthy } from '../../utils/envUtils.js'
 
 // docs: https://docs.google.com/document/d/1oCT4evvWTh3P6z-kcfNQwWTCxAhkoFndSaNS9Gm40uw/edit?tab=t.0
@@ -15,15 +9,6 @@ import { isEnvTruthy } from '../../utils/envUtils.js'
 // Match client-side microcompact token values
 const DEFAULT_MAX_INPUT_TOKENS = 180_000 // Typical warning threshold
 const DEFAULT_TARGET_INPUT_TOKENS = 40_000 // Keep last 40k tokens like client-side
-
-const TOOLS_CLEARABLE_RESULTS = [
-  ...SHELL_TOOL_NAMES,
-  GLOB_TOOL_NAME,
-  GREP_TOOL_NAME,
-  FILE_READ_TOOL_NAME,
-  WEB_FETCH_TOOL_NAME,
-  WEB_SEARCH_TOOL_NAME,
-]
 
 const TOOLS_CLEARABLE_USES = [
   FILE_EDIT_TOOL_NAME,
@@ -43,7 +28,7 @@ export type ContextEditStrategy =
         type: 'tool_uses'
         value: number
       }
-      clear_tool_inputs?: boolean | string[]
+      clear_tool_inputs?: boolean
       exclude_tools?: string[]
       clear_at_least?: {
         type: 'input_tokens'
@@ -116,7 +101,8 @@ export function getAPIContextManagement(options?: {
         type: 'input_tokens',
         value: triggerThreshold - keepTarget,
       },
-      clear_tool_inputs: TOOLS_CLEARABLE_RESULTS,
+      // API now validates this field as boolean; passing a tool-name array fails with 400.
+      clear_tool_inputs: true,
     }
 
     strategies.push(strategy)
